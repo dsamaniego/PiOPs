@@ -13,12 +13,11 @@ sudo pip3 install -r requirements.txt
 
 ```
 ./speech.py -h
-usage: speech.py [-h] [-t TEXT] [-f]
+usage: speech.py [-h] [-t TEXT] [-f] [-g]
 
 optional arguments:
   -h, --help            show this help message and exit
   -t TEXT, --text TEXT  Text to reproduce
   -f, --file            File to take random line and reproduce it
+  -g, --generate        Generate mp3 files for precharged sentences
 ```
-
-A *speech.py* se le pueden pasar 2 argumentos, el texto a reproducir o -f para reproducir una frase aleatoria de las almacenadas en *topics/*
