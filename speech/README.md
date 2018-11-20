@@ -18,6 +18,6 @@ usage: speech.py [-h] [-t TEXT] [-f] [-g]
 optional arguments:
   -h, --help            show this help message and exit
   -t TEXT, --text TEXT  Text to reproduce
-  -f, --file            File to take random line and reproduce it
+  -r, --random          Reproduce random sentence from files in ./topics
   -g, --generate        Generate mp3 files for precharged sentences
 ```

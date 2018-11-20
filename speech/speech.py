@@ -35,7 +35,7 @@ def reproduce_file(_file):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("-t", "--text", type=str, help="Text to reproduce")
-  parser.add_argument("-f", "--file", action="store_true", help="File to take random line and reproduce it")
+  parser.add_argument("-r", "--random", action="store_true", help="Reproduce random sentence from files in ./topics")
   parser.add_argument("-g","--generate", action="store_true", help="Generate mp3 files for precharged sentences")
 #  parser.add_argument("-c", "--clean", action="store_true", help="Delete mp3 files")
   args = parser.parse_args()
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     reproduce_file(get_text_to_speech_file(text))
     exit
 
-  if args["file"]:
+  if args["random"]:
     with open('./topics/' + random.choice(topics) + '.txt') as file:
       sentences = [line for line in file]
     audio_files = []
