@@ -65,4 +65,5 @@ if __name__ == "__main__":
       for sentence in sentences:
         generated_file = get_text_to_speech_file(sentence)
         print ("Creating file %s..." %generated_file)
+    exit
 
