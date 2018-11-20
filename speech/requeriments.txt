@@ -1,0 +1,5 @@
+gTTS==2.0.1
+gTTS-token==1.1.2
+beautifulsoup4==4.6.3
+bs4==0.0.1
+pygame==1.9.3
