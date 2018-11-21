@@ -2,10 +2,7 @@
 
 
 import argparse
-import binascii
-import docopt
 import os, os.path
-import pygame
 import random
 import sys
 import subprocess
