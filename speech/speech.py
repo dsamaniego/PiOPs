@@ -29,6 +29,14 @@ def get_random_sentence(topic):
   return random.choice(audio_files)
 
 
+def delete_cache():
+  for root, dirs, files in os.walk('/tmp'):
+    for file in files:
+      if file.endswith(".mp3"):
+        os.remove("/tmp/" + file)
+
+
+
 def get_text_to_speech_file(text):
   hashstr = get_text_hash(text)
   tmp_file_path = '/tmp/{path}.mp3'.format(path=hashstr)
@@ -49,6 +57,7 @@ if __name__ == "__main__":
   parser.add_argument("-w", "--what", type=str, help="Specify topic to reproduce random sentence")
   parser.add_argument("-g", "--generate", action="store_true", help="Generate mp3 files for precharged sentences")
   parser.add_argument("-l", "--list", action="store_true", help="List available topics")
+  parser.add_argument("-c", "--clean_cache", action="store_true", help="Clean mp3 files in /tmp")
   args = parser.parse_args()
   args = vars(args) 
 
@@ -60,8 +69,9 @@ if __name__ == "__main__":
     reproduce_file(get_text_to_speech_file(text))
     exit
 
+  topics = get_topics(dir + '/topics')
+
   if args["random"]:
-    topics = get_topics(dir + '/topics')
     if args["what"]:
       what = args["what"]
       exist = False
@@ -79,7 +89,6 @@ if __name__ == "__main__":
     exit
 
   if args["generate"]:
-    topics = get_topics(dir + '/topics')
     for topic in topics:
       with open(dir + '/topics/' + random.choice(topics)) as file:
         sentences = [line for line in file]
@@ -89,9 +98,14 @@ if __name__ == "__main__":
     exit
 
   if args["list"]:
-    topics = get_topics(dir + '/topics')
     print ("This is the list of available topics:")
     for item in topics:
       print (item[:-4])
     exit
 
+  if args["clean_cache"]:
+    delete_cache()
+    exit
+
+
+      
