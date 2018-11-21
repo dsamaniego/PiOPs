@@ -61,7 +61,7 @@ if __name__ == "__main__":
   if args["generate"]:
     topics = get_topics(dir + '/topics')
     for topic in topics:
-      with open(dir + '/topics/' + random.choice(topics) + '.txt') as file:
+      with open(dir + '/topics/' + random.choice(topics)) as file:
         sentences = [line for line in file]
       for sentence in sentences:
         generated_file = get_text_to_speech_file(sentence)
