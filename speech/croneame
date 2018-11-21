@@ -1,4 +1,0 @@
-0 15 * * 1-5 /home/pi/scripts/speech.sh Son las 3 de la tarde, se permite el vuelo de dones hasta la proxima jornada >/dev/null 2>&1
-30 8 * * 1-5 /home/pi/scripts/speech.sh A desayunar hijos mios >/dev/null 2>&1
-29 9 * * 1-5 /home/pi/scripts/speech.sh Daily is coming >/dev/null 2>&1
-0 12 * * 5 /home/pi/scripts/speech.sh Ya es viernes madafakas >/dev/null 2>&1
