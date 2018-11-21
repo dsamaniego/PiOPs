@@ -57,7 +57,7 @@ if __name__ == "__main__":
   parser.add_argument("-w", "--what", type=str, help="Specify topic to reproduce random sentence")
   parser.add_argument("-g", "--generate", action="store_true", help="Generate mp3 files for precharged sentences")
   parser.add_argument("-l", "--list", action="store_true", help="List available topics")
-  parser.add_argument("-c", "--clean_cache", action="store_true", help="List available topics")
+  parser.add_argument("-c", "--clean_cache", action="store_true", help="Clean mp3 files in /tmp")
   args = parser.parse_args()
   args = vars(args) 
 
