@@ -5,7 +5,7 @@
 Para ejecutar el script *speech.py* e necesario instalar las siguientes dependencias
 
 ```bash
-sudo apt-get install python3 python3-pip
+sudo apt-get install python3 python3-pip code
 sudo pip3 install -r requirements.txt
 ```
 
