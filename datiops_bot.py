@@ -22,13 +22,7 @@ def escribeLog(texto):
   """
 
   date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-  log = 'datiops_bot.log'
-  try:
-    fichero = open(log,'a')
-    fichero.write(date + ' - ' + texto + '\n')
-    fichero.close()
-  except IOError:
-    print ('Error al escribir el log %s' %log)
+  syslog.syslog(texto)
 
 
 def handle(msg):
@@ -42,7 +36,7 @@ def handle(msg):
 
   if chat_id not in secretos["authorized_ids"]:
     escribeLog("El usuario %s (%s) no esta autorizado" %(nombre_usuario, chat_id))
-    speech.play_message("Un usuario no autorizado me ha enviado un mensaje")
+    speech.play_message("%s no está autorizado para enviarme mensajes" %nombre_usuario)
     return
   else:
     if comando == "/help":
