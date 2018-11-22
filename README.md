@@ -61,3 +61,12 @@ sudo systemctl start datiops_bot
 ```
 
 ## Ejecución
+
+```
+usage: datiops_bot.py [-h] -c CONFIG
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        Define el fichero json de configuracion del script
+```
