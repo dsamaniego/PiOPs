@@ -41,12 +41,12 @@ Es necesario tener un fichero *json* con el token del bot de telegram y la lista
 {
   "token": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   "authorized_ids": [
-    1111111,
-    2222222,
-    3333333,
-    4444444,
-    5555555,
-    6666666
+    "1111111",
+    "2222222",
+    "3333333",
+    "4444444",
+    "5555555",
+    "6666666"
   ]
 }
 ```
