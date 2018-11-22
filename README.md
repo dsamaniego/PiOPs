@@ -1,11 +1,11 @@
-# speech
+# speech.py
 
 ## Prerequisitos
 
 Para ejecutar el script *speech.py* e necesario instalar las siguientes dependencias
 
 ```bash
-sudo apt-get install python3 python3-pip code
+sudo apt-get install python3 python3-pip vlc
 sudo pip3 install -r requirements.txt
 ```
 
@@ -24,3 +24,40 @@ optional arguments:
   -l, --list            List available topics
   -c, --clean_cache     Clean mp3 files in /tmp
 ```
+
+# datio_ops.py
+
+## Prerequisitos
+
+```bash
+pip3 install -r requirements.txt
+```
+
+## configuración
+
+Es necesario tener un fichero *json* con el token del bot de telegram y la lista de ids de telegram autorizados. El formato debe ser el siguiente:
+
+```json
+{
+  "token": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "authorized_ids": [
+    1111111,
+    2222222,
+    3333333,
+    4444444,
+    5555555,
+    6666666
+  ]
+}
+```
+
+## Instalación
+
+```bash
+sudo cp datiops_bot.py /usr/local/bin/
+sudo cp datiops_bot.service /etc/systemd/system/
+sudo systemctl enable datiops_bot
+sudo systemctl start datiops_bot
+```
+
+## Ejecución
