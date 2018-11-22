@@ -1,0 +1,10 @@
+[Unit]
+Description=DatiOPS bot Telegram
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python3 /usr/local/bin/datiops_bot.py
+
+[Install]
+WantedBy=multi-user.target

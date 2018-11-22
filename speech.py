@@ -50,6 +50,10 @@ def reproduce_file(_file):
   subprocess.call(["cvlc", "--play-and-exit", _file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
+def play_message(text):
+  reproduce_file(get_text_to_speech_file(text))
+
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("-t", "--text", type=str, help="Text to reproduce")
@@ -66,7 +70,7 @@ if __name__ == "__main__":
 
   if args["text"]:
     text = args["text"]
-    reproduce_file(get_text_to_speech_file(text))
+    play_message(text)
     exit
 
   topics = get_topics(dir + '/topics')
