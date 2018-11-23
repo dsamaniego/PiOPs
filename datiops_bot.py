@@ -67,6 +67,7 @@ def handle(msg):
       mensaje = "Por favor, dime qué quieres reproducir en la raspberry:"
 
     elif comando == "/random":
+      escribeLog("El usuario %s (%s) ha reproducido un mensaje aleatorio" %(nombre_usuario, chat_id))
       reproduce.play_random(random.choice(reproduce.get_topics()))
       mensaje = "Mensaje reproducido"
 
