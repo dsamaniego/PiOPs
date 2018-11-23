@@ -12,15 +12,15 @@ sudo pip3 install -r requirements.txt
 ## Ejecución
 
 ```
-./speech.py -h
-usage: speech.py [-h] [-t TEXT] [-r] [-w WHAT] [-g] [-l] [-c]
+usage: speech.py [-h] [-t TEXT] [-r [RANDOM]] [-l] [-c]
 
 optional arguments:
   -h, --help            show this help message and exit
   -t TEXT, --text TEXT  Text to reproduce
-  -r, --random          Reproduce random sentence from files in ./topics
-  -w WHAT, --what WHAT  Specify topic to reproduce random sentence
-  -g, --generate        Generate mp3 files for precharged sentences
+  -r [RANDOM], --random [RANDOM]
+                        Reproduce random sentence from ./topics/RANDOM.
+                        Without argument, reproduce random sentence from
+                        random topic
   -l, --list            List available topics
   -c, --clean_cache     Clean mp3 files in /tmp
 ```
