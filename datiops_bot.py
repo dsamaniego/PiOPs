@@ -58,6 +58,10 @@ def handle(msg):
       escribeLog("El usuario %s (%s) ha iniciado chat con datiops_bot" %(nombre_usuario, chat_id))
       mensaje = 'Buenas %s!\nSoy el bot de Operaciones de DATIO. Ejecuta /help para saber los comandos que tienes disponibles. A disfrutarlos' %nombre_usuario
 
+    elif comando.startswith("/text "):
+      reproduce.play_message(comando.split("/text ")[1])
+      mensaje = "Mensaje reproducido"
+
     elif comando == "/text":
       esperaMensaje = True
       mensaje = "Por favor, dime qué quieres reproducir en la raspberry:"
