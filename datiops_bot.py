@@ -38,7 +38,6 @@ def handle(msg):
   chat_id = str(msg['chat']['id'])
   comando = msg['text']
   nombre_usuario = msg['from']['first_name']
-  #content_type, chat_type, chat_id = telepot.glance(msg)
 
   if chat_id not in secretos["authorized_ids"]:
     escribeLog("El usuario %s (%s) no esta autorizado" %(nombre_usuario, chat_id))
@@ -50,9 +49,9 @@ def handle(msg):
     if comando == "/help":
       mensaje = """
       Estos son los comandos disponibles:
-
-      - /text: para reproducir un mensaje en la raspberry de ops (después de ejecutar el comando se pedirá el mensaje a reproducir)
-      - /random: para reproducir un mensaje aleatorio en la raspberry"
+      - /list:  para listar los temas disponibles para reproducir frases aleatoriamente
+      - /text: el texto que quieras reproducir en la raspberry (después de ejecutar el comando pregunta el texto a reproducir)
+      - /random: para ejecutar una frase aleatoria de un tema aleatorio
       """
 
     elif comando == "/start":
@@ -63,17 +62,12 @@ def handle(msg):
       esperaMensaje = True
       mensaje = "Por favor, dime qué quieres reproducir en la raspberry:"
 
-    # elif comando == "/random":
-    #   if os.path.islink(os.path.abspath(sys.argv[0])):
-    #     dir = os.path.dirname(os.readlink(sys.argv[0]))
-    #   else:
-    #     dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-    #   print(dir + '/topics')
-    #   topics = speech.get_topics(dir + '/topics')
-    #   topic = random.choice(topics)
-    #   speech.play_random(topic)
-    #   mensaje = "Mensaje reproducido"
+    elif comando == "/random":
+      reproduce.play_random(random.choice(reproduce.get_topics()))
+      mensaje = "Mensaje reproducido"
 
+    elif comando == "/list":
+      mensaje = "Te puedo reproducir frases de cualquiera de estos temas: \n" + reproduce.get_topics()
 
     elif separator in comando:
       if chat_id == "7404034":
@@ -88,7 +82,7 @@ def handle(msg):
     elif esperaMensaje:
       esperaMensaje = False
       texto = comando
-      speech.play_message(texto)
+      reproduce.play_message(texto)
       escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
       mensaje = "Mensaje reproducido"
 
@@ -101,16 +95,20 @@ def handle(msg):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("-c", "--config", required=True, help="Define el fichero json de configuracion del script")
+  parser.add_argument("-c", "--configfile", required=True, help="Define el fichero json de configuracion del script")
   args = parser.parse_args()
   args = vars(args)
+
+  if os.path.islink(os.path.abspath(sys.argv[0])):
+    mydir = os.path.dirname(os.readlink(sys.argv[0]))
+  else:
+    mydir = os.path.dirname(os.path.abspath(sys.argv[0]))
+  reproduce = speech.TeHablo(mydir + "/topics")
   
-  secretos = lee_secretos(args["config"])
+  secretos = lee_secretos(args["configfile"])
   telegram = telepot.Bot(secretos["token"])
   MessageLoop(telegram,handle).run_as_thread()
 
   while 1:
-    secretos = lee_secretos(args["config"])
+    secretos = lee_secretos(args["configfile"])
     time.sleep(60)
-
-    
