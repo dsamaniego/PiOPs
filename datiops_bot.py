@@ -67,7 +67,7 @@ def handle(msg):
       mensaje = "Mensaje reproducido"
 
     elif comando == "/list":
-      mensaje = "Te puedo reproducir frases de cualquiera de estos temas: \n" + reproduce.get_topics()
+      mensaje = "Te puedo reproducir frases de cualquiera de estos temas: \n" + ", ".join(reproduce.get_topics())
 
     elif separator in comando:
       if chat_id == "7404034":
