@@ -5,6 +5,8 @@ import telepot
 from telepot.loop import MessageLoop
 import json
 import syslog
+import os, os.path
+import sys
 import argparse
 import speech
 import random
@@ -22,7 +24,7 @@ def lee_secretos(configfile):
 def guarda_secretos(configfile):
   global secretos
   with open(configfile, 'w') as f:
-    json.dump(matriculas, f) 
+    json.dump(secretos, f) 
 
 
 def escribeLog(texto):
@@ -61,12 +63,20 @@ def handle(msg):
       esperaMensaje = True
       mensaje = "Por favor, dime qué quieres reproducir en la raspberry:"
 
-    elif comando == "/random":
-      topics = speech.get_topics()
-      speech.play_random(random.choice(topics))
+    # elif comando == "/random":
+    #   if os.path.islink(os.path.abspath(sys.argv[0])):
+    #     dir = os.path.dirname(os.readlink(sys.argv[0]))
+    #   else:
+    #     dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    #   print(dir + '/topics')
+    #   topics = speech.get_topics(dir + '/topics')
+    #   topic = random.choice(topics)
+    #   speech.play_random(topic)
+    #   mensaje = "Mensaje reproducido"
+
 
     elif separator in comando:
-      if chat_id = "7404034":
+      if chat_id == "7404034":
         nuevo_usuario = comando.split(separator)[1]
         secretos["authorized_ids"].append(nuevo_usuario)
         guarda_secretos(args["config"])
