@@ -12,7 +12,7 @@ sudo pip3 install -r requirements.txt
 ## Ejecución
 
 ```
-usage: speech.py [-h] [-t TEXT] [-r [RANDOM]] [-l] [-c]
+usage: speech.py [-h] [-t TEXT] [-r [RANDOM]] [-l] [-m MP3]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -22,7 +22,7 @@ optional arguments:
                         Without argument, reproduce random sentence from
                         random topic
   -l, --list            List available topics
-  -c, --clean_cache     Clean mp3 files in /tmp
+  -m MP3, --mp3 MP3     File or url to mp3
 ```
 
 # datio_ops.py
