@@ -87,7 +87,10 @@ def handle(msg):
     elif esperaMensaje:
       esperaMensaje = False
       texto = comando
-      reproduce.play_message(texto)
+      if texto.endswith(".mp3"):
+        reproduce.play_mp3(texto)
+      else:
+        reproduce.play_message(texto)
       escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
       mensaje = "Mensaje reproducido"
 

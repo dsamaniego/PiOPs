@@ -54,10 +54,7 @@ Es necesario tener un fichero *json* con el token del bot de telegram y la lista
 ## Instalación
 
 ```bash
-sudo ln -s /home/pi/PIOPS/datiops_bot.py /usr/local/bin/
-sudo cp datiops_bot.service /etc/systemd/system/
-sudo systemctl enable datiops_bot
-sudo systemctl start datiops_bot
+nohup /usr/local/bin/datiops_bot.py -c /home/pi/PIOPS/secrets.json &
 ```
 
 ## Ejecución
