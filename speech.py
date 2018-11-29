@@ -7,7 +7,7 @@ import random
 import sys
 import subprocess
 import hashlib
-from gtts import gTTS
+
 
 
 class TeHablo:
@@ -22,10 +22,6 @@ class TeHablo:
       self.topics =  files
 
 
-  def __get_text_hash(self, text):
-    return hashlib.md5(text.encode("utf-8")).hexdigest()
-
-
   def __get_random_sentence(self, topic):
     if topic in self.topics:
       with open(self.path_topics + "/" + topic) as file:
@@ -34,29 +30,15 @@ class TeHablo:
     else:
       print("Topic doesn't exist")
       return ""
-    
-
-  def __get_text_to_speech_file(self, text):
-    hashstr = self.__get_text_hash(text)
-    tmp_file_path = '/tmp/{path}.mp3'.format(path=hashstr)
-    if not os.path.isfile(tmp_file_path):
-      tts = gTTS(text=text, lang="es")
-      tts.save(tmp_file_path)
-    return tmp_file_path
 
 
   def __reproduce_file(self, file):
     subprocess.call(["cvlc", "--play-and-exit", file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-
-  # PRIVATE FUNCTIONS
-  
-  def delete_cache(self):
-    for root, dirs, files in os.walk('/tmp'):
-      for file in files:
-        if file.endswith(".mp3"):
-          os.remove("/tmp/" + file)
+  def __reproduce_text(self, text):
+    url = "http://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=" + text.replace(" ","+").replace("\n","") + "&tl=es"
+    subprocess.call(["cvlc", "--play-and-exit", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
   def get_topics(self):
@@ -64,15 +46,18 @@ class TeHablo:
 
 
   def play_message(self, text):
-    self.__reproduce_file(self.__get_text_to_speech_file(text))
+    self.__reproduce_text(text)
 
 
   def play_random(self, topic):
     if topic in self.topics:
-      self.__reproduce_file(self.__get_text_to_speech_file(self.__get_random_sentence(topic)))
+      self.__reproduce_text(self.__get_random_sentence(topic))
     else:
       print("Topic doesn't exist")
 
+
+  def play_mp3(self, file):
+    self.__reproduce_file(file)
 
 
 if __name__ == "__main__":
@@ -83,7 +68,7 @@ if __name__ == "__main__":
   parser.add_argument("-t", "--text", type=str, help="Text to reproduce")
   parser.add_argument("-r", "--random", type=str, nargs="?", const=default_topic, help="Reproduce random sentence from ./topics/RANDOM. Without argument, reproduce random sentence from random topic")
   parser.add_argument("-l", "--list", action="store_true", help="List available topics")
-  parser.add_argument("-c", "--clean_cache", action="store_true", help="Clean mp3 files in /tmp")
+  parser.add_argument("-m", "--mp3", type=str, help="File or url to mp3")
   args = parser.parse_args()
   args = vars(args) 
 
@@ -103,9 +88,8 @@ if __name__ == "__main__":
     print(reproduce.get_topics())
     exit
 
-  if args["clean_cache"]:
-    reproduce.delete_cache()
+  if args["mp3"]:
+    reproduce.play_mp3(args["mp3"])
     exit
-
 
       
