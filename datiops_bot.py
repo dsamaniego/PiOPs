@@ -2,6 +2,7 @@
 
 import time
 import telepot
+from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from telepot.loop import MessageLoop
 import json
 import syslog
@@ -14,6 +15,7 @@ import random
 
 secretos = {}
 esperaMensaje = False
+esperaRandom = False
 
 def lee_secretos(configfile):
   global secretos
@@ -34,10 +36,12 @@ def escribeLog(texto):
 def handle(msg):
   global esperaMensaje
   separator = "auth="
-
+  print(msg)
   chat_id = str(msg['chat']['id'])
   comando = msg['text']
   nombre_usuario = msg['from']['first_name']
+  
+  keyboard = InlineKeyboardMarkup(inline_keyboard=[])
 
   if chat_id not in secretos["authorized_ids"]:
     escribeLog("El usuario %s (%s) no esta autorizado" %(nombre_usuario, chat_id))
@@ -67,9 +71,26 @@ def handle(msg):
       mensaje = "Por favor, dime qué quieres reproducir en la raspberry:"
 
     elif comando == "/random":
-      escribeLog("El usuario %s (%s) ha reproducido un mensaje aleatorio" %(nombre_usuario, chat_id))
-      reproduce.play_random(random.choice(reproduce.get_topics()))
-      mensaje = "Mensaje reproducido"
+      esperaRandom = True
+      temas = reproduce.get_topics()
+      #escribeLog("El usuario %s (%s) ha reproducido un mensaje aleatorio" %(nombre_usuario, chat_id))
+      #reproduce.play_random(random.choice(reproduce.get_topics()))
+      mensaje = "Por favor, elige uno de los siguientes temas:"
+      botones = []
+      for item in temas:
+        botones.append([InlineKeyboardButton(text=item, callback_data=item)])
+      #cachopos = [botones[i:i+2] for i in range(0,len(botones),2)]
+      keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
+    
+
+# keyboard = InlineKeyboardMarkup(inline_keyboard=[
+# 		[InlineKeyboardButton(text=str(result[0][1]), callback_data=result[0][0]),InlineKeyboardButton(text=str(result[1][1]), callback_data=result[1][0])],
+# 		[InlineKeyboardButton(text=str(result[2][1]), callback_data=result[2][0]),InlineKeyboardButton(text=str(result[3][1]), callback_data=result[3][0])],
+# 		[InlineKeyboardButton(text=str(result[4][1]), callback_data=result[4][0]),InlineKeyboardButton(text=str(result[5][1]), callback_data=result[5][0])],
+# 		[InlineKeyboardButton(text=str(result[6][1]), callback_data=result[6][0]),InlineKeyboardButton(text=str(result[7][1]), callback_data=result[7][0])],
+# 		[InlineKeyboardButton(text=str(result[8][1]), callback_data=result[8][0]),InlineKeyboardButton(text=str(result[9][1]), callback_data=result[9][0])],
+# 		[InlineKeyboardButton(text='10 previous', callback_data=next)],
+# 		])
 
     elif comando == "/list":
       mensaje = "Te puedo reproducir frases de cualquiera de estos temas: \n" + ", ".join(reproduce.get_topics())
@@ -94,11 +115,37 @@ def handle(msg):
       escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
       mensaje = "Mensaje reproducido"
 
+    elif esperaRandom:
+      esperaRandom = False
+
     else:
       mensaje = "Ay %s, eres un lechón. Aprende a usar este bot ejecutando el comando /help anda" %nombre_usuario
-    telegram.sendMessage(chat_id, mensaje)
+    telegram.sendMessage(chat_id, mensaje, reply_markup=keyboard)
+
+    #telegram.answerCallbackQuery
     pass
-  
+
+
+
+async def on_callback_query(msg):
+    query_id, from_id, data = telepot.glance(msg, flavor='callback_query')
+    print('Callback query:', query_id, from_id, data)
+
+    reproduce.play_random(data)
+    # if data == 'notification':
+    #     await telegram.answerCallbackQuery(query_id, text='Notification at top of screen')
+    # elif data == 'alert':
+    #     await telegram.answerCallbackQuery(query_id, text='Alert!', show_alert=True)
+    # elif data == 'edit':
+    #     global message_with_inline_keyboard
+
+    #     if message_with_inline_keyboard:
+    #         msg_idf = telepot.message_identifier(message_with_inline_keyboard)
+    #         await telegram.editMessageText(msg_idf, 'NEW MESSAGE HERE!!!!!')
+    #     else:
+    #         await telegram.answerCallbackQuery(query_id, text='No previous message to edit')
+
+
 
 
 if __name__ == "__main__":
@@ -115,7 +162,8 @@ if __name__ == "__main__":
   
   secretos = lee_secretos(args["configfile"])
   telegram = telepot.Bot(secretos["token"])
-  MessageLoop(telegram,handle).run_as_thread()
+  #MessageLoop(telegram,handle).run_as_thread()
+  MessageLoop(telegram, {'chat': handle, 'callback_query': on_callback_query}).run_as_thread()
 
   while 1:
     secretos = lee_secretos(args["configfile"])
