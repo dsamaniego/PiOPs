@@ -18,8 +18,7 @@ class TeHablo:
     Argument -> directory path of topics
     """
     self.path_topics = os.path.abspath(path_to_topics)
-    for root, dirs, files in os.walk(path_to_topics):
-      self.topics =  files
+    self.__update_topics()
 
 
   def __get_random_sentence(self, topic):
@@ -31,6 +30,9 @@ class TeHablo:
       print("Topic doesn't exist")
       return ""
 
+  def __update_topics(self):
+    for root, dirs, files in os.walk(self.path_topics):
+      self.topics =  files
 
   def __reproduce_file(self, file):
     subprocess.call(["cvlc", "--play-and-exit", file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -42,6 +44,7 @@ class TeHablo:
 
 
   def get_topics(self):
+    self.__update_topics()
     return self.topics
 
 
