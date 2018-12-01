@@ -2,6 +2,7 @@
 
 import time
 import telepot
+from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from telepot.loop import MessageLoop
 import json
 import syslog
@@ -14,6 +15,7 @@ import random
 
 secretos = {}
 esperaMensaje = False
+esperaRandom = False
 
 def lee_secretos(configfile):
   global secretos
@@ -31,27 +33,26 @@ def escribeLog(texto):
   syslog.syslog(texto)
 
 
-def handle(msg):
+def on_chat_message(msg):
   global esperaMensaje
-  separator = "auth="
-
   chat_id = str(msg['chat']['id'])
   comando = msg['text']
   nombre_usuario = msg['from']['first_name']
+  
+  keyboard = InlineKeyboardMarkup(inline_keyboard=[])
 
   if chat_id not in secretos["authorized_ids"]:
     escribeLog("El usuario %s (%s) no esta autorizado" %(nombre_usuario, chat_id))
-    speech.play_message("%s no está autorizado para enviarme mensajes" %nombre_usuario)
-    mensaje = "El usuario %s (%s) quiere usar @datiops_bot, para autorizarle envia auth=%s" %(nombre_usuario, chat_id, chat_id)
-    telegram.sendMessage("7404034",mensaje)
+    mensaje = "El usuario %s (%s) quiere usar @datiops_bot, para autorizarle pulsa el boton" %(nombre_usuario, chat_id)
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Autorizar', callback_data='authorize ' + chat_id)],])
+    telegram.sendMessage("7404034",mensaje, reply_markup=keyboard)
     return
   else:
     if comando == "/help":
       mensaje = """
       Estos son los comandos disponibles:
-      - /list:  para listar los temas disponibles para reproducir frases aleatoriamente
       - /text: el texto que quieras reproducir en la raspberry (después de ejecutar el comando pregunta el texto a reproducir)
-      - /random: para ejecutar una frase aleatoria de un tema aleatorio
+      - /random: para reproducir una frase aleatoria de los temas propuestos
       """
 
     elif comando == "/start":
@@ -67,38 +68,52 @@ def handle(msg):
       mensaje = "Por favor, dime qué quieres reproducir en la raspberry:"
 
     elif comando == "/random":
-      escribeLog("El usuario %s (%s) ha reproducido un mensaje aleatorio" %(nombre_usuario, chat_id))
-      reproduce.play_random(random.choice(reproduce.get_topics()))
-      mensaje = "Mensaje reproducido"
-
-    elif comando == "/list":
-      mensaje = "Te puedo reproducir frases de cualquiera de estos temas: \n" + ", ".join(reproduce.get_topics())
-
-    elif separator in comando:
-      if chat_id == "7404034":
-        nuevo_usuario = comando.split(separator)[1]
-        secretos["authorized_ids"].append(nuevo_usuario)
-        guarda_secretos(args["config"])
-        escribeLog("Se ha autorizado al usuario %s (%s)" %(nombre_usuario,chat_id))
-        mensaje = "Usuario autorizado"
-      else:
-        mensaje = "Estás intentando autorizar a un usuario pero tú tampoco estás autorizado"
+      esperaRandom = True
+      temas = reproduce.get_topics()
+      temas.sort()
+      botones = []
+      for item in temas:
+        botones.append(InlineKeyboardButton(text=item, callback_data=item))
+      columnas = [botones[i:i+2] for i in range(0,len(botones),2)]
+      keyboard = InlineKeyboardMarkup(inline_keyboard=columnas)
+      mensaje = "Por favor, elige uno de los siguientes temas:"
 
     elif esperaMensaje:
       esperaMensaje = False
       texto = comando
-      if texto.endswith(".mp3"):
-        reproduce.play_mp3(texto)
-      else:
-        reproduce.play_message(texto)
+      # if texto.endswith(".mp3"):
+      #   print(texto)
+      #   reproduce.play_mp3(texto)
+      # else:
+      #   reproduce.play_message(texto)
+      reproduce.play_message(texto)
       escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
       mensaje = "Mensaje reproducido"
 
     else:
       mensaje = "Ay %s, eres un lechón. Aprende a usar este bot ejecutando el comando /help anda" %nombre_usuario
-    telegram.sendMessage(chat_id, mensaje)
+    telegram.sendMessage(chat_id, mensaje, reply_markup=keyboard)
     pass
+
+
+
+def on_callback_query(msg):
+  nombre_usuario = msg['from']['first_name']
+  chat_id = str(msg['from']['id'])
+
+  query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
+  telegram.answerCallbackQuery(query_id, text='Mensaje reproducido')
   
+  if query_data in reproduce.get_topics():
+    reproduce.play_random(query_data)
+    escribeLog("El usuario %s (%s) ha reproducido un mensaje aleatorio de %s" %(nombre_usuario, chat_id, query_data))
+  elif "authorize" in query_data:
+    nuevo_usuario = query_data.split(" ")[1]
+    secretos["authorized_ids"].append(nuevo_usuario)
+    guarda_secretos(args["config"])
+    telegram.sendMessage("7404034", "Usuario autorizado")
+
+
 
 
 if __name__ == "__main__":
@@ -115,7 +130,7 @@ if __name__ == "__main__":
   
   secretos = lee_secretos(args["configfile"])
   telegram = telepot.Bot(secretos["token"])
-  MessageLoop(telegram,handle).run_as_thread()
+  MessageLoop(telegram, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
 
   while 1:
     secretos = lee_secretos(args["configfile"])
