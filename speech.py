@@ -64,7 +64,8 @@ class TeHablo:
 
 
 if __name__ == "__main__":
-  reproduce = TeHablo("./topics")
+  mydir = os.path.dirname(os.path.abspath(sys.argv[0]))
+  reproduce = TeHablo(mydir + "/topics")
   default_topic = random.choice(reproduce.get_topics())
 
   parser = argparse.ArgumentParser()

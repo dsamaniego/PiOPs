@@ -100,17 +100,18 @@ def on_chat_message(msg):
 def on_callback_query(msg):
   nombre_usuario = msg['from']['first_name']
   chat_id = str(msg['from']['id'])
-
   query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-  telegram.answerCallbackQuery(query_id, text='Mensaje reproducido')
-  
+    
   if query_data in reproduce.get_topics():
     reproduce.play_random(query_data)
     escribeLog("El usuario %s (%s) ha reproducido un mensaje aleatorio de %s" %(nombre_usuario, chat_id, query_data))
+    telegram.answerCallbackQuery(query_id, text='Mensaje reproducido')
   elif "authorize" in query_data:
     nuevo_usuario = query_data.split(" ")[1]
     secretos["authorized_ids"].append(nuevo_usuario)
-    guarda_secretos(args["config"])
+    guarda_secretos(args["configfile"])
+    escribeLog("Se ha autorizado al usuario %s a usar el bot" %nuevo_usuario)
+    telegram.answerCallbackQuery(query_id, text='Mensaje reproducido')
     telegram.sendMessage("7404034", "Usuario autorizado")
 
 
