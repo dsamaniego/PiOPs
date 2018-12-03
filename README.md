@@ -43,7 +43,7 @@ Es necesario tener un fichero *json* con el token del bot de telegram y la lista
   "admin": [
     "1111111",
     "4444444"
-  ]
+  ],
   "authorized_ids": [
     "1111111",
     "2222222",
