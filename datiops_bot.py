@@ -56,7 +56,7 @@ def on_chat_message(msg):
     mensaje = "El usuario %s (%s) quiere usar @datiops_bot, para autorizarle pulsa el boton" %(nombre_usuario, chat_id)
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Autorizar', callback_data='authorize.' + chat_id)],])
     for admin in secretos["admin"]:
-      telegram.sendMessage(secretos["admin"],mensaje, reply_markup=keyboard)
+      telegram.sendMessage(admin, mensaje, reply_markup=keyboard)
     return
   else:
     if comando == "/help":
