@@ -125,7 +125,7 @@ def on_callback_query(msg):
     telegram.answerCallbackQuery(query_id, text='Mensaje reproducido')
   
   elif "authorize." in query_data:
-    nuevo_usuario = query_data.split(" ")[1]
+    nuevo_usuario = query_data.split("authorize.")[1]
     secretos["authorized_ids"].append(nuevo_usuario)
     guarda_secretos(args["configfile"])
     escribeLog("Se ha autorizado al usuario %s a usar el bot" %nuevo_usuario)
