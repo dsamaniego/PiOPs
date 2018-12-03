@@ -31,6 +31,7 @@ def guarda_secretos(configfile):
 
 def escribeLog(texto):
   syslog.syslog(texto)
+  print(texto)
 
 
 def teclado_usuarios(callback_str):
@@ -175,6 +176,7 @@ def on_callback_query(msg):
       mensaje = "Se ha convertido en administrador al usuario %s (%s)" %(telegram.getChat(to_admin)["first_name"], to_admin)
       escribeLog ("El usuario %s (%s) ha convertido en admin al usuario %s (%s)" %(nombre_usuario, chat_id, telegram.getChat(to_admin)["first_name"], to_admin))
       telegram.answerCallbackQuery(query_id, text='Usuario convertido en administrador')
+      telegram.sendMessage(to_admin,"Ya eres administrador del bot, recuerda: __'un gran poder conlleva una gran responsabilidad__'")
     telegram.sendMessage(chat_id, mensaje)
 
 
