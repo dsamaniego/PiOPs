@@ -210,4 +210,4 @@ if __name__ == "__main__":
 
   while 1:
     secretos = lee_secretos(args["configfile"])
-    time.sleep(60)
+    time.sleep(10)
