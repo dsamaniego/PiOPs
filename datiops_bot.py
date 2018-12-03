@@ -130,7 +130,8 @@ def on_callback_query(msg):
     guarda_secretos(args["configfile"])
     escribeLog("Se ha autorizado al usuario %s a usar el bot" %nuevo_usuario)
     telegram.answerCallbackQuery(query_id, text='Usuario autorizado')
-    telegram.sendMessage(secretos["admin"], "Usuario autorizado")
+    for admin in secretos["admin"]:
+      telegram.sendMessage(admin, "Usuario autorizado")
 
   elif query_data == "authorized":
     mensaje = "Ahora mismo hay estos usuarios autorizados:\n"
