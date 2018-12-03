@@ -42,6 +42,10 @@ def teclado_usuarios(callback_str):
   return InlineKeyboardMarkup(inline_keyboard=columnas)
 
 
+def mensaje_para_admins(mensaje, keyboard=[]):
+  for admin in secretos["admin"]:
+    telegram.sendMessage(admin, mensaje, reply_markup=keyboard)
+
 
 def on_chat_message(msg):
   global esperaMensaje
@@ -55,8 +59,7 @@ def on_chat_message(msg):
     escribeLog("El usuario %s (%s) no esta autorizado" %(nombre_usuario, chat_id))
     mensaje = "El usuario %s (%s) quiere usar @datiops_bot, para autorizarle pulsa el boton" %(nombre_usuario, chat_id)
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Autorizar', callback_data='authorize.' + chat_id)],])
-    for admin in secretos["admin"]:
-      telegram.sendMessage(admin, mensaje, reply_markup=keyboard)
+    mensaje_para_admins(mensaje, keyboard)
     return
   else:
     if comando == "/help":
@@ -126,12 +129,15 @@ def on_callback_query(msg):
   
   elif "authorize." in query_data:
     nuevo_usuario = query_data.split("authorize.")[1]
-    secretos["authorized_ids"].append(nuevo_usuario)
-    guarda_secretos(args["configfile"])
-    escribeLog("Se ha autorizado al usuario %s a usar el bot" %nuevo_usuario)
-    telegram.answerCallbackQuery(query_id, text='Usuario autorizado')
-    for admin in secretos["admin"]:
-      telegram.sendMessage(admin, "Usuario autorizado")
+    if nuevo_usuario in secretos["authorized_ids"]:
+      mensaje = "El usuario %s (%s) ya estaba autorizado" %(telegram.getChat(nuevo_usuario)["first_name"], nuevo_usuario)
+    else:
+      secretos["authorized_ids"].append(nuevo_usuario)
+      guarda_secretos(args["configfile"])
+      escribeLog("Se ha autorizado al usuario %s a usar el bot" %nuevo_usuario)
+      mensaje = "El usuario %s (%s) ha sido autorizado" %(telegram.getChat(nuevo_usuario)["first_name"], nuevo_usuario)
+    telegram.answerCallbackQuery(query_id, text=mensaje)
+    mensaje_para_admins(mensaje)
 
   elif query_data == "authorized":
     mensaje = "Ahora mismo hay estos usuarios autorizados:\n"
@@ -147,13 +153,16 @@ def on_callback_query(msg):
 
   elif "ban." in query_data:
     to_ban = query_data.split("ban.")[1]
-    secretos["authorized_ids"].remove(to_ban)
-    if to_ban in secretos["admin"]:
-      secretos["admin"].remove(to_ban)
-    guarda_secretos(args["configfile"])
-    escribeLog ("El usuario %s (%s) ha baneado al usuario %s (%s)" %(nombre_usuario, chat_id, telegram.getChat(to_ban)["first_name"], to_ban))
-    telegram.answerCallbackQuery(query_id, text='Usuario banneado')
-    telegram.sendMessage(chat_id, "Se ha baneado al usuario %s (%s)" %(telegram.getChat(to_ban)["first_name"], to_ban))
+    if to_ban not in secretos["authorized_ids"]:
+      mensaje = "El usuario %s (%s) ya no estaba en la lista de usuarios autorizados" %(telegram.getChat(to_ban), to_ban)
+    else:
+      secretos["authorized_ids"].remove(to_ban)
+      if to_ban in secretos["admin"]:
+        secretos["admin"].remove(to_ban)
+      guarda_secretos(args["configfile"])
+      escribeLog ("El usuario %s (%s) ha baneado al usuario %s (%s)" %(nombre_usuario, chat_id, telegram.getChat(to_ban)["first_name"], to_ban))
+    telegram.answerCallbackQuery(query_id, mensaje)
+    mensaje_para_admins(mensaje)
   
   elif query_data == "new_admin":
     mensaje = "Elije cual de estos usuarios quieres convertirlo en administrador:"
@@ -171,15 +180,14 @@ def on_callback_query(msg):
     to_admin = query_data.split("newadmin.")[1]
     if to_admin in secretos["admin"]:
       mensaje = "El usuario %s (%s) ya es administrador" %(telegram.getChat(to_admin)["first_name"], to_admin)
-      telegram.answerCallbackQuery(query_id, text='El usuario ya era administrador')
     else:
       secretos["admin"].append(to_admin)
       guarda_secretos(args["configfile"])
       mensaje = "Se ha convertido en administrador al usuario %s (%s)" %(telegram.getChat(to_admin)["first_name"], to_admin)
       escribeLog ("El usuario %s (%s) ha convertido en admin al usuario %s (%s)" %(nombre_usuario, chat_id, telegram.getChat(to_admin)["first_name"], to_admin))
-      telegram.answerCallbackQuery(query_id, text='Usuario convertido en administrador')
       telegram.sendMessage(to_admin,"Ya eres administrador del bot, recuerda: __'un gran poder conlleva una gran responsabilidad__'")
-    telegram.sendMessage(chat_id, mensaje)
+    telegram.answerCallbackQuery(query_id, text=mensaje)
+    mensaje_para_admins(mensaje)
 
 
 
