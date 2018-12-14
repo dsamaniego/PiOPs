@@ -112,7 +112,7 @@ def on_chat_message(msg):
 
     elif comando == "/admin":
       if chat_id not in secretos["admin"]:
-        mensaje = "Lo siento pero no eres un usuario administrador. Pase por caja para aumentar tus privilegios https://telegram.me/ohermosa"
+        mensaje = "Lo siento pero no eres un usuario administrador. Pase por caja para aumentar tus privilegios https://www.paypal.me/ohermosa"
         escribeLog ("El usuario %s (%s) ha intentado ejecutar el comando '/admin'" %(nombre_usuario, chat_id))
       else:
         mensaje = "Elige qué quieres hacer:"
