@@ -15,8 +15,6 @@ import random
 
 secretos = {}
 esperaMensaje = False
-esperaRandom = False
-esperaMP3 = False
 
 def lee_secretos(configfile):
   global secretos
@@ -51,8 +49,6 @@ def mensaje_para_admins(mensaje, keyboard=[]):
 
 def on_chat_message(msg):
   global esperaMensaje
-  global esperaRandom
-  global esperaMP3
 
   chat_id = str(msg['chat']['id'])
   comando = msg['text']
@@ -89,7 +85,6 @@ def on_chat_message(msg):
       mensaje = "Por favor, dime qué quieres reproducir en la raspberry:"
 
     elif comando == "/random":
-      esperaRandom = True
       temas = reproduce.get_topics()
       temas.sort()
       botones = []
@@ -100,7 +95,6 @@ def on_chat_message(msg):
       mensaje = "Por favor, elige uno de los siguientes temas:"
 
     elif comando == "/mp3":
-      esperaMP3 = True
       mp3 = reproduce.get_mp3()
       mp3.sort()
       botones = []
