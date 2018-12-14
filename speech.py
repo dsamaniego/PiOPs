@@ -47,6 +47,7 @@ class TeHablo:
 
 
   def __reproduce_text(self, text):
+    text = text.lower().replace("iago","ángel").replace("yago","ángel")
     url = "http://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=" + text.replace(" ","+").replace("\n","") + "&tl=es"
     subprocess.call(["cvlc", "--play-and-exit", url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
