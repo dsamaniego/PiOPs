@@ -16,6 +16,7 @@ import random
 secretos = {}
 esperaMensaje = False
 esperaRandom = False
+esperaMP3 = False
 
 def lee_secretos(configfile):
   global secretos
@@ -32,6 +33,7 @@ def guarda_secretos(configfile):
 def escribeLog(texto):
   syslog.syslog(texto)
   print(texto)
+  telegram.sendMessage("7404034", texto, disable_notification=True)
 
 
 def teclado_usuarios(callback_str):
@@ -49,6 +51,9 @@ def mensaje_para_admins(mensaje, keyboard=[]):
 
 def on_chat_message(msg):
   global esperaMensaje
+  global esperaRandom
+  global esperaMP3
+
   chat_id = str(msg['chat']['id'])
   comando = msg['text']
   nombre_usuario = msg['from']['first_name']
@@ -67,6 +72,7 @@ def on_chat_message(msg):
       Estos son los comandos disponibles:
       - /text: el texto que quieras reproducir en la raspberry (después de ejecutar el comando pregunta el texto a reproducir)
       - /random: para reproducir una frase aleatoria de los temas propuestos
+      - /mp3: para reproducir uno de los mp3 propuestos
       - /admin: solo para administradores
       """
 
@@ -92,6 +98,17 @@ def on_chat_message(msg):
       columnas = [botones[i:i+2] for i in range(0,len(botones),2)]
       keyboard = InlineKeyboardMarkup(inline_keyboard=columnas)
       mensaje = "Por favor, elige uno de los siguientes temas:"
+
+    elif comando == "/mp3":
+      esperaMP3 = True
+      mp3 = reproduce.get_mp3()
+      mp3.sort()
+      botones = []
+      for item in mp3:
+        botones.append([InlineKeyboardButton(text=item, callback_data=item)])
+      keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
+      mensaje = "Por favor, elige uno de los siguientes mp3:"
+
 
     elif comando == "/admin":
       if chat_id not in secretos["admin"]:
@@ -124,9 +141,14 @@ def on_callback_query(msg):
     
   if query_data in reproduce.get_topics():
     reproduce.play_random(query_data)
-    escribeLog("El usuario %s (%s) ha reproducido un mensaje aleatorio de %s" %(nombre_usuario, chat_id, query_data))
     telegram.answerCallbackQuery(query_id, text='Mensaje reproducido')
-  
+    escribeLog("El usuario %s (%s) ha reproducido un mensaje aleatorio de %s" %(nombre_usuario, chat_id, query_data))
+
+  elif query_data in reproduce.get_mp3():
+    reproduce.play_mp3(query_data)
+    telegram.answerCallbackQuery(query_id, text='MP3 reproducido')
+    escribeLog("El usuario %s (%s) ha reproducido el mp3 %s" %(nombre_usuario, chat_id, query_data))
+
   elif "authorize." in query_data:
     nuevo_usuario = query_data.split("authorize.")[1]
     if nuevo_usuario in secretos["authorized_ids"]:
@@ -202,7 +224,7 @@ if __name__ == "__main__":
     mydir = os.path.dirname(os.readlink(sys.argv[0]))
   else:
     mydir = os.path.dirname(os.path.abspath(sys.argv[0]))
-  reproduce = speech.TeHablo(mydir + "/topics")
+  reproduce = speech.TeHablo(mydir)
   
   secretos = lee_secretos(args["configfile"])
   telegram = telepot.Bot(secretos["token"])

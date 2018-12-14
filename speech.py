@@ -13,12 +13,14 @@ import hashlib
 class TeHablo:
   # PRIVATE FUNCTIONS
   
-  def __init__(self, path_to_topics):
+  def __init__(self, path_to):
     """
     Argument -> directory path of topics
     """
-    self.path_topics = os.path.abspath(path_to_topics)
+    self.path_topics = os.path.abspath(path_to + "/topics")
+    self.path_mp3 = os.path.abspath(path_to + "/mp3")
     self.__update_topics()
+    self.__update_mp3()
 
 
   def __get_random_sentence(self, topic):
@@ -34,6 +36,12 @@ class TeHablo:
     for root, dirs, files in os.walk(self.path_topics):
       self.topics =  files
 
+
+  def __update_mp3(self):
+    for root, dirs, files in os.walk(self.path_mp3):
+      self.mp3 =  files
+
+
   def __reproduce_file(self, file):
     subprocess.call(["cvlc", "--play-and-exit", file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -48,6 +56,11 @@ class TeHablo:
     return self.topics
 
 
+  def get_mp3(self):
+    self.__update_mp3()
+    return self.mp3
+
+
   def play_message(self, text):
     self.__reproduce_text(text)
 
@@ -60,19 +73,22 @@ class TeHablo:
 
 
   def play_mp3(self, file):
-    self.__reproduce_file(file)
+    if file in self.mp3:
+      self.__reproduce_file(os.path.join(self.path_mp3,file))
+    else:
+      print("MP3 doesn't exist")
 
 
 if __name__ == "__main__":
   mydir = os.path.dirname(os.path.abspath(sys.argv[0]))
-  reproduce = TeHablo(mydir + "/topics")
+  reproduce = TeHablo(mydir)
   default_topic = random.choice(reproduce.get_topics())
 
   parser = argparse.ArgumentParser()
   parser.add_argument("-t", "--text", type=str, help="Text to reproduce")
   parser.add_argument("-r", "--random", type=str, nargs="?", const=default_topic, help="Reproduce random sentence from ./topics/RANDOM. Without argument, reproduce random sentence from random topic")
   parser.add_argument("-l", "--list", action="store_true", help="List available topics")
-  parser.add_argument("-m", "--mp3", type=str, help="File or url to mp3")
+  parser.add_argument("-m", "--mp3", type=str, help="MP3 file of list. User -l to see available mp3")
   args = parser.parse_args()
   args = vars(args) 
 
@@ -90,10 +106,11 @@ if __name__ == "__main__":
   if args["list"]:
     print ("This is the list of available topics:")
     print(reproduce.get_topics())
+    print ("")
+    print ("This is the list of available mp3:")
+    print(reproduce.get_mp3())
     exit
 
   if args["mp3"]:
     reproduce.play_mp3(args["mp3"])
     exit
-
-      

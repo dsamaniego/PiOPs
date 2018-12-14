@@ -22,8 +22,8 @@ optional arguments:
                         Without argument, reproduce random sentence from
                         random topic
   -l, --list            List available topics
-  -m MP3, --mp3 MP3     File or url to mp3
-```
+  -m MP3, --mp3 MP3     MP3 file of list. User -l to see available mp3
+  ```
 
 # datio_ops.py
 
