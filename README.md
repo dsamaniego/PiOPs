@@ -2,12 +2,22 @@
 
 ## Prerequisitos
 
+### Ubuntu/Debian
+
 Para ejecutar el script *speech.py* e necesario instalar las siguientes dependencias
 
 ```bash
-sudo apt-get install python3 python3-pip vlc
+sudo apt-get install python3 python3-pip python3-pyaudio vlc
 sudo pip3 install -r requirements.txt
 ```
+
+### Fedora
+
+```bash
+sudo dnf -y install python3 python3-pip python3-pyaudio python3-devel redhat-rpm-config portaudio-devel portaudio vlc
+sudo pip3 install -r requirements.txt
+```
+
 
 ## Ejecución
 
