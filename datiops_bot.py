@@ -254,7 +254,6 @@ def on_callback_query(msg):
     telegram.answerCallbackQuery(query_id, "Tu mensaje ha pasado el filtro de Dios, enhorabuena")
 
   elif "authmsg_no_" in query_data:
-    
     textohash = query_data.split("authmsg_no_")[1]
     mensaje = "Dios no ha aceptado tu mensaje, anda y que te den por culo"
     telegram.answerCallbackQuery(query_id, "jajajajajajajajajaja jodete")
