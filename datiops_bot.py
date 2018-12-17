@@ -11,13 +11,15 @@ import sys
 import argparse
 import speech
 import random
+import hashlib
 
 
 secretos = {}
 esperaMensaje = False
 superadmin = "7404034"
 aprobado = ""
-lista_moderacion = {}
+dict_moderacion = {}
+frases_hash = []
 
 def lee_secretos(configfile):
   global secretos
@@ -56,6 +58,8 @@ def estado_moderacion():
   else:
     return "La moderacion de mensajes esta DESACTIVADA"
 
+def get_hash_texto(self, texto):
+  return hashlib.md5(texto.encode("utf-8")).hexdigest()
 
 def on_chat_message(msg):
   global esperaMensaje
@@ -128,17 +132,24 @@ def on_chat_message(msg):
       esperaMensaje = False
       texto = comando
       if secretos["moderation_mode"]:
-        if chat_id in lista_moderacion.keys() and lista_moderacion[chat_id]
-        lista_moderacion[chat_id] = {"mensaje": texto, "aprobado": False}
+        textohash = get_hash_texto(texto)
+        if chat_id not in dict_moderacion.keys():
+          dict_moderacion[chat_id] = { textohash: False}
+          frases_hash.append((textohash, texto))
+        elif chat_id in dict_moderacion.keys() and textohash not in dict_moderacion[chat_id].keys():
+          dict_moderacion[chat_id][textohash] = False
+        elif chat_id in dict_moderacion.keys() and textohash in dict_moderacion[chat_id].keys():
+          print ("El usuario %s (%s) insiste en reproducir la misma frase" %(nombre_usuario, chat_id))
+      
         mensaje = "%s quiere enviar el siguiente mensaje: '%s'. Permitir?" %(nombre_usuario, texto)
-        botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsg_yes"), InlineKeyboardButton(text="NO", callback_data="authmsg_no_" + chat_id)]]
+        botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsg_yes_" + textohash), InlineKeyboardButton(text="NO", callback_data="authmsg_no_" + textohash)]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
         telegram.sendMessage(superadmin, mensaje, reply_markup=keyboard)
       
-      if aprobado:
+      else:
         reproduce.play_message(texto)
-      escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
-      mensaje = "Mensaje reproducido"
+        escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
+        mensaje = "Mensaje reproducido"
 
     else:
       mensaje = "Ay %s, eres un lechón. Aprende a usar este bot ejecutando el comando /help anda" %nombre_usuario
@@ -237,13 +248,14 @@ def on_callback_query(msg):
     telegram.answerCallbackQuery(query_id, text=mensaje)
     escribeLog ("El usuario %s (%s) ha cambiado el modo moderación" %(nombre_usuario, chat_id))
 
-  elif query_data == "authmsg_yes":
-    aprobado = True
+  elif "authmsg_yes_" in query_data:
+    textohash = query_data.split("authmsg_yes_")[1]
+    reproduce.play_message()
     telegram.answerCallbackQuery(query_id, "Tu mensaje ha pasado el filtro de Dios, enhorabuena")
 
   elif "authmsg_no_" in query_data:
-    aprobado = False
-    deny_msg_from = query_data.split("authmsg_no_")[1]
+    
+    textohash = query_data.split("authmsg_no_")[1]
     mensaje = "Dios no ha aceptado tu mensaje, anda y que te den por culo"
     telegram.answerCallbackQuery(query_id, "jajajajajajajajajaja jodete")
     telegram.sendMessage(superadmin, mensaje)
