@@ -15,6 +15,9 @@ import random
 
 secretos = {}
 esperaMensaje = False
+superadmin = "7404034"
+aprobado = ""
+lista_moderacion = {}
 
 def lee_secretos(configfile):
   global secretos
@@ -31,7 +34,7 @@ def guarda_secretos(configfile):
 def escribeLog(texto):
   syslog.syslog(texto)
   print(texto)
-  telegram.sendMessage("7404034", texto, disable_notification=True)
+  telegram.sendMessage(superadmin, texto, disable_notification=True)
 
 
 def teclado_usuarios(callback_str):
@@ -47,9 +50,16 @@ def mensaje_para_admins(mensaje, keyboard=[]):
     telegram.sendMessage(admin, mensaje, reply_markup=keyboard)
 
 
+def estado_moderacion():
+  if secretos["moderation_mode"]:
+    return "La moderacion de mensajes esta ACTIVADA"
+  else:
+    return "La moderacion de mensajes esta DESACTIVADA"
+
+
 def on_chat_message(msg):
   global esperaMensaje
-
+  
   chat_id = str(msg['chat']['id'])
   comando = msg['text']
   nombre_usuario = msg['from']['first_name']
@@ -111,13 +121,22 @@ def on_chat_message(msg):
       else:
         mensaje = "Elige qué quieres hacer:"
         botones = [[InlineKeyboardButton(text="Ver autorizados", callback_data="authorized"), InlineKeyboardButton(text="Bannear", callback_data="ban")],
-          [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin")]]
+          [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin"), InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
 
     elif esperaMensaje:
       esperaMensaje = False
       texto = comando
-      reproduce.play_message(texto)
+      if secretos["moderation_mode"]:
+        if chat_id in lista_moderacion.keys() and lista_moderacion[chat_id]
+        lista_moderacion[chat_id] = {"mensaje": texto, "aprobado": False}
+        mensaje = "%s quiere enviar el siguiente mensaje: '%s'. Permitir?" %(nombre_usuario, texto)
+        botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsg_yes"), InlineKeyboardButton(text="NO", callback_data="authmsg_no_" + chat_id)]]
+        keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
+        telegram.sendMessage(superadmin, mensaje, reply_markup=keyboard)
+      
+      if aprobado:
+        reproduce.play_message(texto)
       escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
       mensaje = "Mensaje reproducido"
 
@@ -205,6 +224,29 @@ def on_callback_query(msg):
     telegram.answerCallbackQuery(query_id, text=mensaje)
     mensaje_para_admins(mensaje)
 
+  elif query_data == "moderation_status":
+    mensaje = estado_moderacion()
+    telegram.answerCallbackQuery(query_id, text=mensaje)
+  
+  elif query_data == "moderation_mode":
+    secretos["moderation_mode"] = not secretos["moderation_mode"]
+    if not secretos["moderation_mode"]:
+      aprobado = True
+    guarda_secretos(args["configfile"])
+    mensaje = estado_moderacion()
+    telegram.answerCallbackQuery(query_id, text=mensaje)
+    escribeLog ("El usuario %s (%s) ha cambiado el modo moderación" %(nombre_usuario, chat_id))
+
+  elif query_data == "authmsg_yes":
+    aprobado = True
+    telegram.answerCallbackQuery(query_id, "Tu mensaje ha pasado el filtro de Dios, enhorabuena")
+
+  elif "authmsg_no_" in query_data:
+    aprobado = False
+    deny_msg_from = query_data.split("authmsg_no_")[1]
+    mensaje = "Dios no ha aceptado tu mensaje, anda y que te den por culo"
+    telegram.answerCallbackQuery(query_id, "jajajajajajajajajaja jodete")
+    telegram.sendMessage(superadmin, mensaje)
 
 
 

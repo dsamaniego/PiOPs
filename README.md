@@ -51,7 +51,8 @@ Es necesario tener un fichero *json* con el token del bot de telegram y la lista
     "4444444",
     "5555555",
     "6666666"
-  ]
+  ],
+  "moderation_mode": "False"
 }
 ```
 
