@@ -18,8 +18,7 @@ secretos = {}
 esperaMensaje = False
 superadmin = "7404034"
 aprobado = ""
-dict_moderacion = {}
-frases_hash = []
+moderacion = {}
 
 def lee_secretos(configfile):
   global secretos
@@ -58,8 +57,35 @@ def estado_moderacion():
   else:
     return "La moderacion de mensajes esta DESACTIVADA"
 
-def get_hash_texto(self, texto):
+
+def get_hash_texto(texto):
   return hashlib.md5(texto.encode("utf-8")).hexdigest()
+
+
+def get_chatid_from_hash(hash_texto):
+  for item in moderacion.keys():
+    for i in lista[item]:
+      if i[0] == hash_texto:
+        return item
+
+
+def get_text_from_hash(hash_texto):
+  for item in moderacion.keys():
+    for i in lista[item]:
+      if i[0] == hash_texto:
+        return i[1]
+
+
+def hash_already_exists(chat_id, hash_texto):
+  if (hash_texto, get_text_from_hash(hash_texto)) in moderacion[chat_id]:
+    return True
+  else:
+    return False
+
+
+def delete_text(chat_id, hash_texto):
+  moderacion[chat_id].remove((hash_texto, get_text_from_hash(hash_texto)))
+
 
 def on_chat_message(msg):
   global esperaMensaje
@@ -117,7 +143,6 @@ def on_chat_message(msg):
       keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
       mensaje = "Por favor, elige uno de los siguientes mp3:"
 
-
     elif comando == "/admin":
       if chat_id not in secretos["admin"]:
         mensaje = "Lo siento pero no eres un usuario administrador. Pase por caja para aumentar tus privilegios https://www.paypal.me/ohermosa"
@@ -131,21 +156,19 @@ def on_chat_message(msg):
     elif esperaMensaje:
       esperaMensaje = False
       texto = comando
+      hash_texto = get_hash_texto(texto)
       if secretos["moderation_mode"]:
-        textohash = get_hash_texto(texto)
-        if chat_id not in dict_moderacion.keys():
-          dict_moderacion[chat_id] = { textohash: False}
-          frases_hash.append((textohash, texto))
-        elif chat_id in dict_moderacion.keys() and textohash not in dict_moderacion[chat_id].keys():
-          dict_moderacion[chat_id][textohash] = False
-        elif chat_id in dict_moderacion.keys() and textohash in dict_moderacion[chat_id].keys():
+        if chat_id not in moderacion.keys():
+          moderacion[chat_id] = [(hash_texto, texto)]
+        elif chat_id in moderacion.keys() and not hash_already_exists(chat_id, hash_texto):
+          moderacion[chat_id].append((hash_texto, texto))
+        elif chat_id in moderacion.keys() and hash_already_exists(chat_id, hash_texto):
           print ("El usuario %s (%s) insiste en reproducir la misma frase" %(nombre_usuario, chat_id))
       
         mensaje = "%s quiere enviar el siguiente mensaje: '%s'. Permitir?" %(nombre_usuario, texto)
-        botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsg_yes_" + textohash), InlineKeyboardButton(text="NO", callback_data="authmsg_no_" + textohash)]]
+        botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsg_yes_" + hash_texto), InlineKeyboardButton(text="NO", callback_data="authmsg_no_" + hash_texto)]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
         telegram.sendMessage(superadmin, mensaje, reply_markup=keyboard)
-      
       else:
         reproduce.play_message(texto)
         escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
@@ -153,7 +176,9 @@ def on_chat_message(msg):
 
     else:
       mensaje = "Ay %s, eres un lechón. Aprende a usar este bot ejecutando el comando /help anda" %nombre_usuario
-    telegram.sendMessage(chat_id, mensaje, reply_markup=keyboard)
+    
+    if not secretos["moderation_mode"]:
+      telegram.sendMessage(chat_id, mensaje, reply_markup=keyboard)
     pass
 
 
@@ -249,16 +274,19 @@ def on_callback_query(msg):
     escribeLog ("El usuario %s (%s) ha cambiado el modo moderación" %(nombre_usuario, chat_id))
 
   elif "authmsg_yes_" in query_data:
-    textohash = query_data.split("authmsg_yes_")[1]
-    reproduce.play_message()
-    telegram.answerCallbackQuery(query_id, "Tu mensaje ha pasado el filtro de Dios, enhorabuena")
+    telegram.answerCallbackQuery(query_id, "Mensaje aceptado")
+    hash_texto = query_data.split("authmsg_yes_")[1]
+    usuario = get_chatid_from_hash(hash_texto)
+    texto = get_text_from_hash(hash_texto)
+    reproduce.play_message(texto)
+    telegram.sendMessage(get_chatid_from_hash(hash_texto), "Mensaje reproducido")
+    delete_text(usuario, hash_texto)
 
   elif "authmsg_no_" in query_data:
-    textohash = query_data.split("authmsg_no_")[1]
-    mensaje = "Dios no ha aceptado tu mensaje, anda y que te den por culo"
-    telegram.answerCallbackQuery(query_id, "jajajajajajajajajaja jodete")
-    telegram.sendMessage(superadmin, mensaje)
-
+    telegram.answerCallbackQuery(query_id, "Mensaje denegado")
+    hash_texto = query_data.split("authmsg_no_")[1]
+    telegram.sendMessage(get_chatid_from_hash(hash_texto), "Dios no ha aprobado tu mensaje, anda y que te den por culo")
+   
 
 
 if __name__ == "__main__":
