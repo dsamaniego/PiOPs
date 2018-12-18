@@ -266,6 +266,7 @@ def on_callback_query(msg):
     guarda_secretos(args["configfile"])
     mensaje = estado_moderacion()
     telegram.answerCallbackQuery(query_id, text=mensaje)
+    telegram.sendMessage(superadmin, mensaje)
     escribeLog ("El usuario %s (%s) ha cambiado el modo moderación" %(nombre_usuario, chat_id))
 
   elif "authmsgyes_" in query_data:
