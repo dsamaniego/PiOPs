@@ -263,8 +263,6 @@ def on_callback_query(msg):
   
   elif query_data == "moderation_mode":
     secretos["moderation_mode"] = not secretos["moderation_mode"]
-    if not secretos["moderation_mode"]:
-      aprobado = True
     guarda_secretos(args["configfile"])
     mensaje = estado_moderacion()
     telegram.answerCallbackQuery(query_id, text=mensaje)
