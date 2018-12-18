@@ -62,16 +62,9 @@ def get_hash_texto(texto):
   return hashlib.md5(texto.encode("utf-8")).hexdigest()
 
 
-def get_chatid_from_hash(hash_texto):
-  for item in moderacion.keys():
-    for i in lista[item]:
-      if i[0] == hash_texto:
-        return item
-
-
 def get_text_from_hash(hash_texto):
   for item in moderacion.keys():
-    for i in lista[item]:
+    for i in moderacion[item]:
       if i[0] == hash_texto:
         return i[1]
 
@@ -96,6 +89,10 @@ def on_chat_message(msg):
   
   keyboard = InlineKeyboardMarkup(inline_keyboard=[])
 
+  # print("CHAT_ID: " + chat_id)
+  # print("NOMBRE_USUARIO: "+ nombre_usuario)
+  # print("COMANDO: " + comando)
+
   if chat_id not in secretos["authorized_ids"]:
     escribeLog("El usuario %s (%s) no esta autorizado" %(nombre_usuario, chat_id))
     mensaje = "El usuario %s (%s) quiere usar @datiops_bot, para autorizarle pulsa el boton" %(nombre_usuario, chat_id)
@@ -116,9 +113,9 @@ def on_chat_message(msg):
       escribeLog("El usuario %s (%s) ha iniciado chat con datiops_bot" %(nombre_usuario, chat_id))
       mensaje = 'Buenas %s!\nSoy el bot de Operaciones de DATIO. Ejecuta /help para saber los comandos que tienes disponibles. A disfrutarlos' %nombre_usuario
 
-    elif comando.startswith("/text "):
-      reproduce.play_message(comando.split("/text ")[1])
-      mensaje = "Mensaje reproducido"
+    # elif comando.startswith("/text "):
+    #   reproduce.play_message(comando.split("/text ")[1])
+    #   mensaje = "Mensaje reproducido"
 
     elif comando == "/text":
       esperaMensaje = True
@@ -150,7 +147,8 @@ def on_chat_message(msg):
       else:
         mensaje = "Elige qué quieres hacer:"
         botones = [[InlineKeyboardButton(text="Ver autorizados", callback_data="authorized"), InlineKeyboardButton(text="Bannear", callback_data="ban")],
-          [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin"), InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")]]
+          [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin")],
+          [InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
 
     elif esperaMensaje:
@@ -166,9 +164,8 @@ def on_chat_message(msg):
           print ("El usuario %s (%s) insiste en reproducir la misma frase" %(nombre_usuario, chat_id))
       
         mensaje = "%s quiere enviar el siguiente mensaje: '%s'. Permitir?" %(nombre_usuario, texto)
-        botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsg_yes_" + hash_texto), InlineKeyboardButton(text="NO", callback_data="authmsg_no_" + hash_texto)]]
+        botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsgyes_" + chat_id + "_" + hash_texto), InlineKeyboardButton(text="NO", callback_data="authmsgno_" + chat_id + "_" + hash_texto)]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
-        telegram.sendMessage(superadmin, mensaje, reply_markup=keyboard)
       else:
         reproduce.play_message(texto)
         escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
@@ -177,7 +174,7 @@ def on_chat_message(msg):
     else:
       mensaje = "Ay %s, eres un lechón. Aprende a usar este bot ejecutando el comando /help anda" %nombre_usuario
     
-    if not secretos["moderation_mode"]:
+    if not secretos["moderation_mode"] or not esperaMensaje:
       telegram.sendMessage(chat_id, mensaje, reply_markup=keyboard)
     pass
 
@@ -187,7 +184,7 @@ def on_callback_query(msg):
   nombre_usuario = msg['from']['first_name']
   chat_id = str(msg['from']['id'])
   query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-    
+
   if query_data in reproduce.get_topics():
     reproduce.play_random(query_data)
     telegram.answerCallbackQuery(query_id, text='Mensaje reproducido')
@@ -273,22 +270,30 @@ def on_callback_query(msg):
     telegram.answerCallbackQuery(query_id, text=mensaje)
     escribeLog ("El usuario %s (%s) ha cambiado el modo moderación" %(nombre_usuario, chat_id))
 
-  elif "authmsg_yes_" in query_data:
+  elif "authmsgyes_" in query_data:
     telegram.answerCallbackQuery(query_id, "Mensaje aceptado")
-    hash_texto = query_data.split("authmsg_yes_")[1]
-    usuario = get_chatid_from_hash(hash_texto)
+    usuario = query_data.split("_")[1]
+    hash_texto = query_data.split("_")[2]
     texto = get_text_from_hash(hash_texto)
-    reproduce.play_message(texto)
-    telegram.sendMessage(get_chatid_from_hash(hash_texto), "Mensaje reproducido")
-    delete_text(usuario, hash_texto)
-    escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' y ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, texto))
-
-  elif "authmsg_no_" in query_data:
+    if hash_already_exists(chat_id, hash_texto):
+      reproduce.play_message(texto)
+      telegram.sendMessage(usuario, "Mensaje reproducido")
+      delete_text(usuario, hash_texto)
+      escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' y ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, texto))
+    else:
+      telegram.sendMessage(usuario, "Este mensaje ya ha sido procesado")
+    
+  elif "authmsgno_" in query_data:
     telegram.answerCallbackQuery(query_id, "Mensaje denegado")
-    hash_texto = query_data.split("authmsg_no_")[1]
-    usuario = get_chatid_from_hash(hash_texto)
-    telegram.sendMessage(get_chatid_from_hash(hash_texto), "Dios no ha aprobado tu mensaje, anda y que te den por culo")
-    escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' pero no ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, texto))
+    usuario = query_data.split("_")[1]
+    hash_texto = query_data.split("_")[2]
+    if hash_already_exists(chat_id, hash_texto):
+      telegram.sendMessage(usuario, "Dios no ha aprobado tu mensaje, anda y que te den por culo")
+      delete_text(usuario, hash_texto)
+      escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' pero no ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, texto))
+    else:
+      telegram.sendMessage(usuario, "Este mensaje ya ha sido procesado")
+      
 
 
 if __name__ == "__main__":
@@ -304,6 +309,7 @@ if __name__ == "__main__":
   reproduce = speech.TeHablo(mydir)
   
   secretos = lee_secretos(args["configfile"])
+  # print (secretos)
   telegram = telepot.Bot(secretos["token"])
   MessageLoop(telegram, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
 
