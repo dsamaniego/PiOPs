@@ -166,6 +166,8 @@ def on_chat_message(msg):
         mensaje = "%s quiere enviar el siguiente mensaje: '%s'. Permitir?" %(nombre_usuario, texto)
         botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsgyes_" + chat_id + "_" + hash_texto), InlineKeyboardButton(text="NO", callback_data="authmsgno_" + chat_id + "_" + hash_texto)]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
+        telegram.sendMessage(superadmin, mensaje, reply_markup=keyboard)
+        pass
       else:
         reproduce.play_message(texto)
         escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
