@@ -288,8 +288,7 @@ def on_callback_query(msg):
     hash_texto = query_data.split("authmsg_no_")[1]
     usuario = get_chatid_from_hash(hash_texto)
     telegram.sendMessage(get_chatid_from_hash(hash_texto), "Dios no ha aprobado tu mensaje, anda y que te den por culo")
-    escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' pero no ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, texto)
-   
+    escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' pero no ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, texto))
 
 
 if __name__ == "__main__":
