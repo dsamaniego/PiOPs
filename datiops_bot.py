@@ -35,7 +35,7 @@ def guarda_secretos(configfile):
 def escribeLog(texto):
   syslog.syslog(texto)
   print(texto)
-  telegram.sendMessage(superadmin, texto, disable_notification=True)
+  # telegram.sendMessage(superadmin, texto, disable_notification=True)
 
 
 def teclado_usuarios(callback_str):
