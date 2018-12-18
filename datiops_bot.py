@@ -16,6 +16,7 @@ import hashlib
 
 secretos = {}
 esperaMensaje = False
+to_superadmin = False
 superadmin = "7404034"
 aprobado = ""
 moderacion = {}
@@ -70,11 +71,14 @@ def get_text_from_hash(hash_texto):
 
 
 def hash_already_exists(chat_id, hash_texto):
-  if (hash_texto, get_text_from_hash(hash_texto)) in moderacion[chat_id]:
-    return True
-  else:
+  # print(moderacion)
+  try:
+    if (hash_texto, get_text_from_hash(hash_texto)) in moderacion[chat_id]:
+      return True
+    else:
+      return False
+  except KeyError:
     return False
-
 
 def delete_text(chat_id, hash_texto):
   moderacion[chat_id].remove((hash_texto, get_text_from_hash(hash_texto)))
@@ -82,6 +86,7 @@ def delete_text(chat_id, hash_texto):
 
 def on_chat_message(msg):
   global esperaMensaje
+  global to_superadmin
   
   chat_id = str(msg['chat']['id'])
   comando = msg['text']
@@ -166,8 +171,8 @@ def on_chat_message(msg):
         mensaje = "%s quiere enviar el siguiente mensaje: '%s'. Permitir?" %(nombre_usuario, texto)
         botones = [[InlineKeyboardButton(text="SÍ", callback_data="authmsgyes_" + chat_id + "_" + hash_texto), InlineKeyboardButton(text="NO", callback_data="authmsgno_" + chat_id + "_" + hash_texto)]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
-        telegram.sendMessage(superadmin, mensaje, reply_markup=keyboard)
-        pass
+        to_superadmin = True
+        
       else:
         reproduce.play_message(texto)
         escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
@@ -176,9 +181,12 @@ def on_chat_message(msg):
     else:
       mensaje = "Ay %s, eres un lechón. Aprende a usar este bot ejecutando el comando /help anda" %nombre_usuario
     
-    if not secretos["moderation_mode"] or not esperaMensaje:
+    if to_superadmin:
+      telegram.sendMessage(superadmin, mensaje, reply_markup=keyboard)
+      to_superadmin = False
+    else:
       telegram.sendMessage(chat_id, mensaje, reply_markup=keyboard)
-    pass
+    
 
 
 
@@ -277,24 +285,24 @@ def on_callback_query(msg):
     usuario = query_data.split("_")[1]
     hash_texto = query_data.split("_")[2]
     texto = get_text_from_hash(hash_texto)
-    if hash_already_exists(chat_id, hash_texto):
+    if hash_already_exists(usuario, hash_texto):
       reproduce.play_message(texto)
       telegram.sendMessage(usuario, "Mensaje reproducido")
       delete_text(usuario, hash_texto)
       escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' y ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, texto))
     else:
-      telegram.sendMessage(usuario, "Este mensaje ya ha sido procesado")
+      telegram.sendMessage(superadmin, "Este mensaje ya ha sido procesado")
     
   elif "authmsgno_" in query_data:
     telegram.answerCallbackQuery(query_id, "Mensaje denegado")
     usuario = query_data.split("_")[1]
     hash_texto = query_data.split("_")[2]
-    if hash_already_exists(chat_id, hash_texto):
+    if hash_already_exists(usuario, hash_texto):
       telegram.sendMessage(usuario, "Dios no ha aprobado tu mensaje, anda y que te den por culo")
       delete_text(usuario, hash_texto)
-      escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' pero no ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, texto))
+      escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' pero no ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, get_text_from_hash(hash_texto)))
     else:
-      telegram.sendMessage(usuario, "Este mensaje ya ha sido procesado")
+      telegram.sendMessage(superadmin, "Este mensaje ya ha sido procesado")
       
 
 
