@@ -212,6 +212,7 @@ def on_callback_query(msg):
     else:
       secretos["authorized_ids"].append(nuevo_usuario)
       guarda_secretos(args["configfile"])
+      telegram.sendMessage(nuevo_usuario, "Has sido autorizado, ENHORABUENA!")
       escribeLog("Se ha autorizado al usuario %s a usar el bot" %nuevo_usuario)
       mensaje = "El usuario %s (%s) ha sido autorizado" %(telegram.getChat(nuevo_usuario)["first_name"], nuevo_usuario)
     telegram.answerCallbackQuery(query_id, text=mensaje)
@@ -231,14 +232,18 @@ def on_callback_query(msg):
 
   elif "ban." in query_data:
     to_ban = query_data.split("ban.")[1]
-    if to_ban not in secretos["authorized_ids"]:
-      mensaje = "El usuario %s (%s) ya no estaba en la lista de usuarios autorizados" %(telegram.getChat(to_ban), to_ban)
+    if to_ban == superadmin or to_ban in secretos["authorized_ids"]:
+      mensaje = "No se puede banear a un administrador"
     else:
-      secretos["authorized_ids"].remove(to_ban)
-      if to_ban in secretos["admin"]:
-        secretos["admin"].remove(to_ban)
-      guarda_secretos(args["configfile"])
-      escribeLog ("El usuario %s (%s) ha baneado al usuario %s (%s)" %(nombre_usuario, chat_id, telegram.getChat(to_ban)["first_name"], to_ban))
+      if to_ban not in secretos["authorized_ids"]:
+        mensaje = "El usuario %s (%s) ya no estaba en la lista de usuarios autorizados" %(telegram.getChat(to_ban), to_ban)
+      else:
+        secretos["authorized_ids"].remove(to_ban)
+        if to_ban in secretos["admin"]:
+          secretos["admin"].remove(to_ban)
+        guarda_secretos(args["configfile"])
+        telegram.sendMessage(to_ban, "Has sido baneado del bot. Para cualquier reclamacion, llama al 091")
+        escribeLog ("El usuario %s (%s) ha baneado al usuario %s (%s)" %(nombre_usuario, chat_id, telegram.getChat(to_ban)["first_name"], to_ban))
     telegram.answerCallbackQuery(query_id, mensaje)
     mensaje_para_admins(mensaje)
   
