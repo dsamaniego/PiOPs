@@ -134,7 +134,7 @@ def on_chat_message(msg):
         botones.append(InlineKeyboardButton(text=item, callback_data=item))
       columnas = [botones[i:i+2] for i in range(0,len(botones),2)]
       keyboard = InlineKeyboardMarkup(inline_keyboard=columnas)
-      mensaje = "Por far, elige uno de los siguientes temas:"
+      mensaje = "Por favor, elige uno de los siguientes temas:"
 
     elif comando == "/mp3":
       mp3 = reproduce.get_mp3()
