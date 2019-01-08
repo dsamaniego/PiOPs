@@ -153,7 +153,8 @@ def on_chat_message(msg):
         mensaje = "Elige qué quieres hacer:"
         botones = [[InlineKeyboardButton(text="Ver autorizados", callback_data="authorized"), InlineKeyboardButton(text="Bannear", callback_data="ban")],
           [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin")],
-          [InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")]]
+          [InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")],
+          [InlineKeyboardButton(text="Enviar mensaje", callback_data="send_message")]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
 
     elif esperaMensaje:
@@ -308,6 +309,19 @@ def on_callback_query(msg):
       escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' pero no ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, get_text_from_hash(hash_texto)))
     else:
       telegram.sendMessage(superadmin, "Este mensaje ya ha sido procesado")
+  
+  elif query_data == "send_message":
+    keyboard = teclado_usuarios("message.")
+    mensaje = "Elige que usuario al que quieres enviar un mensaje:"
+    telegram.sendMessage(chat_id, mensaje, reply_markup=keyboard)
+
+  elif "message." in query_data:
+    to_message = query_data.split("message.")[1]
+    
+    telegram.sendMessage(to_message, "Has sido baneado del bot. Para cualquier reclamacion, llama al 091")
+    escribeLog ("El usuario %s (%s) ha enviado un mensaje al usuario %s (%s)" %(nombre_usuario, chat_id, telegram.getChat(to_message)["first_name"], to_message))
+  
+    telegram.answerCallbackQuery(query_id, "Mensaje enviado")
       
 
 
