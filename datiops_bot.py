@@ -151,10 +151,7 @@ def on_chat_message(msg):
         escribeLog ("El usuario %s (%s) ha intentado ejecutar el comando '/admin'" %(nombre_usuario, chat_id))
       else:
         mensaje = "Elige qué quieres hacer:"
-        botones = [[InlineKeyboardButton(text="Ver autorizados", callback_data="authorized"), InlineKeyboardButton(text="Bannear", callback_data="ban")],
-          [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin")],
-          [InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")],
-          [InlineKeyboardButton(text="Enviar mensaje", callback_data="send_message")]
+        botones = [[InlineKeyboardButton(text="Ver autorizados", callback_data="authorized"), InlineKeyboardButton(text="Bannear", callback_data="ban")],          [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin")],          [InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")],[InlineKeyboardButton(text="Enviar mensaje", callback_data="send_message")]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
 
     elif esperaMensaje:
