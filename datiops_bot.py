@@ -180,7 +180,7 @@ def on_chat_message(msg):
       destinatario = comando.split("@")[1]
       mensaje = comando.split("@")[2]
       chat_id = destinatario
-      escribeLog("El usuario %s (%s) ha enviado como @datiops_bot el mensaje '%s' a %s") %(nombre_usuario, chat_id, mensaje, telegram.getChat(destinatario)["first_name"])
+      escribeLog("El usuario %s (%s) ha enviado como @datiops_bot el mensaje '%s' a %s" %(nombre_usuario, chat_id, mensaje, telegram.getChat(destinatario)["first_name"]))
 
 
     else:
