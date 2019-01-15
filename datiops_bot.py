@@ -151,9 +151,7 @@ def on_chat_message(msg):
         escribeLog ("El usuario %s (%s) ha intentado ejecutar el comando '/admin'" %(nombre_usuario, chat_id))
       else:
         mensaje = "Elige qué quieres hacer:"
-        botones = [[InlineKeyboardButton(text="Ver autorizados", callback_data="authorized"), InlineKeyboardButton(text="Bannear", callback_data="ban")],
-          [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin")],
-          [InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")]]
+        botones = [[InlineKeyboardButton(text="Ver autorizados", callback_data="authorized"), InlineKeyboardButton(text="Bannear", callback_data="ban")],          [InlineKeyboardButton(text="Ver administradores", callback_data="ver_admin"), InlineKeyboardButton(text="Nuevo admin", callback_data="new_admin")],          [InlineKeyboardButton(text="Moderation STATUS", callback_data="moderation_status"), InlineKeyboardButton(text="Moderation MODE", callback_data="moderation_mode")],[InlineKeyboardButton(text="Enviar mensaje", callback_data="send_message")]]
         keyboard = InlineKeyboardMarkup(inline_keyboard=botones)
 
     elif esperaMensaje:
@@ -177,6 +175,13 @@ def on_chat_message(msg):
         reproduce.play_message(texto)
         escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
         mensaje = "Mensaje reproducido"
+
+    elif comando.startswith("MSG@"):
+      destinatario = comando.split("@")[1]
+      mensaje = comando.split("@")[2]
+      chat_id = destinatario
+      escribeLog("El usuario %s (%s) ha enviado como @datiops_bot el mensaje '%s' a %s") %(nombre_usuario, chat_id, mensaje, telegram.getChat(destinatario)["first_name"])
+
 
     else:
       mensaje = "Ay %s, eres un lechón. Aprende a usar este bot ejecutando el comando /help anda" %nombre_usuario
@@ -308,6 +313,18 @@ def on_callback_query(msg):
       escribeLog("El usuario %s (%s) ha enviado el mensaje '%s' pero no ha sido aprobado por el superadmin" %(telegram.getChat(usuario)["first_name"], usuario, get_text_from_hash(hash_texto)))
     else:
       telegram.sendMessage(superadmin, "Este mensaje ya ha sido procesado")
+  
+  elif query_data == "send_message":
+    keyboard = teclado_usuarios("message.")
+    mensaje = "Elige que usuario al que quieres enviar un mensaje:"
+    telegram.sendMessage(chat_id, mensaje, reply_markup=keyboard)
+
+  elif "message." in query_data:
+    to_message = query_data.split("message.")[1]
+    
+    mensaje = "Envia 'MSG@" + to_message + "@tu mensaje' para enviarle un mensaje a " + telegram.getChat(to_message)["first_name"]
+    telegram.sendMessage(chat_id, mensaje)
+    
       
 
 
