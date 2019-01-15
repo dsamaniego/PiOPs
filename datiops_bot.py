@@ -176,6 +176,13 @@ def on_chat_message(msg):
         escribeLog("El usuario %s (%s) ha enviado el mensaje '%s'" %(nombre_usuario, chat_id, texto))
         mensaje = "Mensaje reproducido"
 
+    elif comando.startswith("MSG@"):
+      destinatario = comando.split("@")[1]
+      mensaje = comando.split("@")[2]
+      chat_id = destinatario
+      escribeLog("El usuario %s (%s) ha enviado como @datiops_bot el mensaje '%s' a %s") %(nombre_usuario, chat_id, mensaje, telegram.getChat(destinatario)["first_name"])
+
+
     else:
       mensaje = "Ay %s, eres un lechón. Aprende a usar este bot ejecutando el comando /help anda" %nombre_usuario
     
@@ -315,10 +322,9 @@ def on_callback_query(msg):
   elif "message." in query_data:
     to_message = query_data.split("message.")[1]
     
-    telegram.sendMessage(to_message, "Has sido baneado del bot. Para cualquier reclamacion, llama al 091")
-    escribeLog ("El usuario %s (%s) ha enviado un mensaje al usuario %s (%s)" %(nombre_usuario, chat_id, telegram.getChat(to_message)["first_name"], to_message))
-  
-    telegram.answerCallbackQuery(query_id, "Mensaje enviado")
+    mensaje = "Envia 'MSG@" + to_message + "@tu mensaje' para enviarle un mensaje a " + telegram.getChat(to_message)["first_name"]
+    telegram.sendMessage(chat_id, mensaje)
+    
       
 
 
