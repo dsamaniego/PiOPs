@@ -341,6 +341,10 @@ if __name__ == "__main__":
   reproduce = speech.TeHablo(mydir)
   
   secretos = lee_secretos(args["configfile"])
+  if superadmin not in secretos.admin:
+    secretos["admin"].append(superadmin)
+    guarda_secretos(args["configfile"])
+
   # print (secretos)
   telegram = telepot.Bot(secretos["token"])
   MessageLoop(telegram, {'chat': on_chat_message, 'callback_query': on_callback_query}).run_as_thread()
