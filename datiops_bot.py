@@ -341,7 +341,7 @@ if __name__ == "__main__":
   reproduce = speech.TeHablo(mydir)
   
   secretos = lee_secretos(args["configfile"])
-  if superadmin not in secretos.admin:
+  if superadmin not in secretos["admin"]:
     secretos["admin"].append(superadmin)
     guarda_secretos(args["configfile"])
 
