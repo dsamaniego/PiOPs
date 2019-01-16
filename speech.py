@@ -6,21 +6,23 @@ import os, os.path
 import random
 import sys
 import subprocess
-import hashlib
-
 
 
 class TeHablo:
   # PRIVATE FUNCTIONS
   
-  def __init__(self, path_to):
+  def __init__(self, path_to=''):
     """
     Argument -> directory path of topics
     """
-    self.path_topics = os.path.abspath(path_to + "/topics")
-    self.path_mp3 = os.path.abspath(path_to + "/mp3")
-    self.__update_topics()
-    self.__update_mp3()
+    if path_to == '':
+      self.nodir = True
+    else:
+      self.nodir = False
+      self.path_topics = os.path.abspath(path_to + "/topics")
+      self.path_mp3 = os.path.abspath(path_to + "/mp3")
+      self.__update_topics()
+      self.__update_mp3()
 
 
   def __get_random_sentence(self, topic):
@@ -52,11 +54,17 @@ class TeHablo:
 
 
   def get_topics(self):
+    if self.nodir:
+      raise ArgumentTypeError("Topics directory is not defined")
+      return []
     self.__update_topics()
     return self.topics
 
 
   def get_mp3(self):
+    if self.nodir:
+      raise ArgumentTypeError("MP3 directory is not defined")
+      return []
     self.__update_mp3()
     return self.mp3
 
@@ -65,18 +73,26 @@ class TeHablo:
     self.__reproduce_text(text)
 
 
-  def play_random(self, topic):
-    if topic in self.topics:
-      self.__reproduce_text(self.__get_random_sentence(topic))
+  def play_random(self, topic=''):
+    if self.nodir:
+      raise ArgumentTypeError("Topics directory is not defined")
     else:
-      print("Topic doesn't exist")
+      if topic in self.topics:
+        self.__reproduce_text(self.__get_random_sentence(topic))
+      else:
+        print("Topic doesn't exist")
 
 
   def play_mp3(self, file):
-    if file in self.mp3:
-      self.__reproduce_file(os.path.join(self.path_mp3,file))
+    if self.nodir:
+      raise ArgumentTypeError("Topics directory is not defined")
     else:
-      print("MP3 doesn't exist")
+      if file in self.mp3:
+        self.__reproduce_file(os.path.join(self.path_mp3,file))
+      else:
+        print("MP3 doesn't exist")
+
+
 
 
 if __name__ == "__main__":
